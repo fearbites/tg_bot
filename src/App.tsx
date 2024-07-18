@@ -36,7 +36,7 @@ function App() {
       // User is authenticated via Telegram
       const user = JSON.parse(telegramAuthData['user']);
       setTelegramUser(user);
-      // Assuming you have userId from Telegram user data
+      // Set userId to the Telegram user's id
       setUserId(user.id.toString());
     }
   }, []);
