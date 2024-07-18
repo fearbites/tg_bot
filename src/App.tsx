@@ -10,20 +10,20 @@ interface ClickPosition {
   y: number;
 }
 
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
-}
+// Remove the TelegramUser interface
+// interface TelegramUser {
+//   id: number;
+//   first_name: string;
+//   last_name?: string;
+//   username?: string;
+//   language_code?: string;
+// }
 
 function App() {
   const [points, setPoints] = useState<number>(0);
-  const [energy, setEnergy] = useState<number>(1000);
+  const [energy, setEnergy] = useState<number>(0);
   const [clicks, setClicks] = useState<ClickPosition[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
 
   const pointsToAdd = 12;
   const energyToReduce = 12;
@@ -35,8 +35,6 @@ function App() {
     if (telegramAuthData.hasOwnProperty('user')) {
       // User is authenticated via Telegram
       const user = JSON.parse(telegramAuthData['user']);
-      setTelegramUser(user);
-      // Assuming you have userId from Telegram user data
       setUserId(user.id.toString());
     }
   }, []);
@@ -81,7 +79,7 @@ function App() {
             console.log(`User ${userId} points updated: ${points}`);
           })
           .catch((error: any) => {
-            console.error('Authentication failed', error);
+            console.error('Failed to update progress', error);
           });
       };
 
