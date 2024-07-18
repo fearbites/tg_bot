@@ -111,10 +111,12 @@ function App() {
             <img src={coin} width={44} height={44} alt="Coin" />
             <span className="ml-2">{points.toLocaleString()}</span>
           </div>
-          <div className="text-base mt-2 flex items-center">
-            <img src={trophy} width={24} height={24} alt="Trophy" />
-            <span className="ml-1"> Gold <Arrow size={18} className="m1-0 mb-1 inline block" /></span>
-          </div>
+          {telegramUser && (
+            <div className="text-base mt-2 flex items-center">
+              <img src={trophy} width={24} height={24} alt="Trophy" />
+              <span className="ml-1"> Hello, {telegramUser.first_name}! <Arrow size={18} className="m1-0 mb-1 inline block" /></span>
+            </div>
+          )}
         </div>
 
         <div className="fixed bottom-0 left-0 w-full px-4 pb-4 z-10">
