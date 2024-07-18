@@ -10,11 +10,20 @@ interface ClickPosition {
   y: number;
 }
 
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+}
+
 function App() {
   const [points, setPoints] = useState<number>(0);
-  const [energy, setEnergy] = useState<number>(1000);
+  const [energy, setEnergy] = useState<number>(0);
   const [clicks, setClicks] = useState<ClickPosition[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
 
   const pointsToAdd = 12;
   const energyToReduce = 12;
@@ -26,6 +35,8 @@ function App() {
     if (telegramAuthData.hasOwnProperty('user')) {
       // User is authenticated via Telegram
       const user = JSON.parse(telegramAuthData['user']);
+      setTelegramUser(user);
+      // Assuming you have userId from Telegram user data
       setUserId(user.id.toString());
     }
   }, []);
@@ -39,11 +50,11 @@ function App() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    setPoints(points + pointsToAdd);
+    setPoints((prevPoints) => prevPoints + pointsToAdd);
     setEnergy((prevEnergy) => Math.max(prevEnergy - energyToReduce, 0));
 
     const newClick: ClickPosition = { id: Date.now(), x, y };
-    setClicks([...clicks, newClick]);
+    setClicks((prevClicks) => [...prevClicks, newClick]);
 
     console.log(`User ${userId} sent data to server. Points: ${points + pointsToAdd}`);
   };
@@ -61,23 +72,25 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const updateProgress = () => {
-      axios
-        .post(`http://localhost:5173/updateProgress/${userId}`, { points, energy })
-        .then(() => {
-          console.log(`User ${userId} points updated: ${points}`);
-        })
-        .catch((error) => {
-          console.error('Failed to update progress', error);
-        });
-    };
+    if (userId) {
+      const updateProgress = () => {
+        axios
+          .post(`http://localhost:5173/updateProgress/${userId}`, { points, energy })
+          .then(() => {
+            console.log(`User ${userId} points updated: ${points}`);
+          })
+          .catch((error) => {
+            console.error('Failed to update progress', error);
+          });
+      };
 
-    window.addEventListener('beforeunload', updateProgress);
+      window.addEventListener('beforeunload', updateProgress);
 
-    return () => {
-      updateProgress();
-      window.removeEventListener('beforeunload', updateProgress);
-    };
+      return () => {
+        updateProgress();
+        window.removeEventListener('beforeunload', updateProgress);
+      };
+    }
   }, [points, energy, userId]);
 
   return (
