@@ -17,11 +17,16 @@ const App: React.FC = () => {
       telegram.ready();
       const user = telegram.initDataUnsafe.user;
       setUserId(user.id);
+      console.log(`User ID: ${user.id}`);
 
       // Загрузить очки пользователя с backend
+      console.log('Loading points...');
       fetch(`/api/points/${user.id}`)
         .then(response => response.json())
-        .then(data => setPoints(data.points))
+        .then(data => {
+          setPoints(data.points);
+          console.log(`Points loaded: ${data.points}`);
+        })
         .catch(error => console.error('Error fetching points:', error));
     }
   }, []);
@@ -47,7 +52,9 @@ const App: React.FC = () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ points: newPoints })
-    }).catch(error => console.error('Error saving points:', error));
+    })
+      .then(() => console.log(`OK - Points saved: ${newPoints}`))
+      .catch(error => console.error('Error saving points:', error));
   };
 
   const handleAnimationEnd = (id: number) => {
