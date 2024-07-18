@@ -80,8 +80,8 @@ function App() {
           .then(() => {
             console.log(`User ${userId} points updated: ${points}`);
           })
-          .catch((error) => {
-            console.error('Failed to update progress', error);
+          .catch((error: any) => {
+            console.error('Authentication failed', error);
           });
       };
 
