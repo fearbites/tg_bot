@@ -38,6 +38,9 @@ function App() {
       setTelegramUser(user);
       // Set userId to the Telegram user's id
       setUserId(user.id.toString());
+
+      // Output Telegram user id to console
+      console.log(`tgId = "${user.id}"`);
     }
   }, []);
 
