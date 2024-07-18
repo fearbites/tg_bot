@@ -10,20 +10,19 @@ interface ClickPosition {
   y: number;
 }
 
-// Remove the TelegramUser interface
-// interface TelegramUser {
-//   id: number;
-//   first_name: string;
-//   last_name?: string;
-//   username?: string;
-//   language_code?: string;
-// }
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+}
 
 function App() {
   const [points, setPoints] = useState<number>(0);
-  const [energy, setEnergy] = useState<number>(0);
+  const [energy, setEnergy] = useState<number>(1000);
   const [clicks, setClicks] = useState<ClickPosition[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setTelegramUser] = useState<TelegramUser | null>(null); // Utilizing TelegramUser interface
 
   const pointsToAdd = 12;
   const energyToReduce = 12;
@@ -35,7 +34,7 @@ function App() {
     if (telegramAuthData.hasOwnProperty('user')) {
       // User is authenticated via Telegram
       const user = JSON.parse(telegramAuthData['user']);
-      setUserId(user.id.toString());
+      setTelegramUser(user); // Setting authenticated user data
     }
   }, []);
 
