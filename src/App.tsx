@@ -12,10 +12,12 @@ const App: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (window.Telegram.WebApp) {
+    // Проверка наличия объекта Telegram.WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
       const telegram = window.Telegram.WebApp;
       telegram.ready();
       const user = telegram.initDataUnsafe.user;
+      
       if (user) {
         setUserId(user.id);
         console.log(`User ID: ${user.id}`);
@@ -32,6 +34,8 @@ const App: React.FC = () => {
           console.log(`Points loaded: ${data.points}`);
         })
         .catch(error => console.error('Error fetching points:', error));
+    } else {
+      console.error('Telegram WebApp is not available');
     }
   }, []);
 
@@ -77,7 +81,6 @@ const App: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
-  
 
   return (
     <div className="bg-gradient-main min-h-screen px-4 flex flex-col items-center text-white font-medium">
