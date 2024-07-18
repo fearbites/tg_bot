@@ -5,7 +5,7 @@ import { bear, coin, highVoltage, notcoin, rocket, trophy } from './images';
 
 const App: React.FC = () => {
   const [points, setPoints] = useState(0);
-  const [energy, setEnergy] = useState(1000);
+  const [energy, setEnergy] = useState(0);
   const [click, setClick] = useState<{ id: number, x: number, y: number }[]>([]);
   const pointsToAdd = 12;
   const energyToReduce = 12;
