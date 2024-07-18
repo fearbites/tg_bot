@@ -16,8 +16,12 @@ const App: React.FC = () => {
       const telegram = window.Telegram.WebApp;
       telegram.ready();
       const user = telegram.initDataUnsafe.user;
-      setUserId(user.id);
-      console.log(`User ID: ${user.id}`);
+      if (user) {
+        setUserId(user.id);
+        console.log(`User ID: ${user.id}`);
+      } else {
+        console.error('User not found in Telegram WebApp initData');
+      }
 
       // Загрузить очки пользователя с backend
       console.log('Loading points...');
@@ -32,6 +36,11 @@ const App: React.FC = () => {
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!userId) {
+      console.error('User ID is null. Cannot save points.');
+      return;
+    }
+
     if (energy - energyToReduce < 0) {
       return;
     }
@@ -68,6 +77,7 @@ const App: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+  
 
   return (
     <div className="bg-gradient-main min-h-screen px-4 flex flex-col items-center text-white font-medium">
