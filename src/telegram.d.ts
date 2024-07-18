@@ -1,4 +1,5 @@
 // telegram.d.ts
+declare global {
 interface TelegramUser {
   id: number;
   first_name: string;
@@ -23,8 +24,12 @@ interface TelegramWebApp {
   };
 }
 
-interface Window {
-  Telegram: {
-    WebApp: TelegramWebApp;
-  };
+  interface Window {
+    tg?: {
+      getUserId(): Promise<number>; // Определите метод getUserId и его тип в соответствии с документацией Telegram Web App
+      // Добавьте другие методы, которые вы будете использовать
+    };
+  }
+
+
 }

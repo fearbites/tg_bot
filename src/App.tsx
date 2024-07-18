@@ -10,25 +10,11 @@ interface ClickPosition {
   y: number;
 }
 
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
-}
-
-declare global {
-  interface Window {
-    tg: any; // declare `tg` as a global variable
-  }
-}
-
 function App() {
   const [points, setPoints] = useState<number>(0);
   const [energy, setEnergy] = useState<number>(1000);
   const [clicks, setClicks] = useState<ClickPosition[]>([]);
-  const [userId, setTelegramUser] = useState<TelegramUser | null>(null); // Utilizing TelegramUser interface
+  const [userId, setUserId] = useState<string | null>(null);
 
   const pointsToAdd = 12;
   const energyToReduce = 12;
@@ -40,7 +26,7 @@ function App() {
     if (telegramAuthData.hasOwnProperty('user')) {
       // User is authenticated via Telegram
       const user = JSON.parse(telegramAuthData['user']);
-      setTelegramUser(user); // Setting authenticated user data
+      setUserId(user.id.toString());
     }
   }, []);
 
@@ -54,13 +40,12 @@ function App() {
     const y = e.clientY - rect.top;
 
     setPoints(points + pointsToAdd);
-    setEnergy(energy - energyToReduce < 0 ? 0 : energy - energyToReduce);
+    setEnergy((prevEnergy) => Math.max(prevEnergy - energyToReduce, 0));
 
     const newClick: ClickPosition = { id: Date.now(), x, y };
     setClicks([...clicks, newClick]);
 
-    // Logging to console when sending data to server
-    console.log(`User ${userId?.id} sent data to server. Points: ${points + pointsToAdd}`);
+    console.log(`User ${userId} sent data to server. Points: ${points + pointsToAdd}`);
   };
 
   const handleAnimationEnd = (id: number) => {
@@ -76,43 +61,24 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (userId) {
-      const updateProgress = () => {
-        axios
-          .post(`http://localhost:5173/updateProgress/${userId.id}`, { points, energy })
-          .then(() => {
-            console.log(`User ${userId.id} points updated: ${points}`);
-          })
-          .catch((error: any) => {
-            console.error('Failed to update progress', error);
-          });
-      };
-
-      window.addEventListener('beforeunload', updateProgress);
-
-      return () => {
-        updateProgress();
-        window.removeEventListener('beforeunload', updateProgress);
-      };
-    }
-  }, [points, energy, userId]);
-
-  useEffect(() => {
-    // This effect will fetch initial user data if available
-    const fetchInitialUserData = async () => {
-      try {
-        // @ts-ignore
-        const userId = await window.tg.getUserId();
-        console.log('Telegram User ID:', userId);
-        // Now you can use userId to fetch additional user data or perform other actions
-        // For example, you can save userId to state if needed
-      } catch (error) {
-        console.error('Error while getting Telegram user ID:', error);
-      }
+    const updateProgress = () => {
+      axios
+        .post(`http://localhost:5173/updateProgress/${userId}`, { points, energy })
+        .then(() => {
+          console.log(`User ${userId} points updated: ${points}`);
+        })
+        .catch((error) => {
+          console.error('Failed to update progress', error);
+        });
     };
 
-    fetchInitialUserData();
-  }, []);
+    window.addEventListener('beforeunload', updateProgress);
+
+    return () => {
+      updateProgress();
+      window.removeEventListener('beforeunload', updateProgress);
+    };
+  }, [points, energy, userId]);
 
   return (
     <div className="bg-gradient-main min-h-screen px-4 flex flex-col items-center text-white font-medium">
