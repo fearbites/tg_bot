@@ -1,56 +1,29 @@
+// server.js
 const express = require('express');
-const crypto = require('crypto');
-const axios = require('axios');
-const dotenv = require('dotenv');
-
-dotenv.config();
+const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const port = 5173;
 
-const BOT_TOKEN = process.env.BOT_TOKEN; // Загрузка токена из переменной окружения
-const TELEGRAM_API = `https://api.telegram.org/bot${BOT_TOKEN}`;
+app.use(bodyParser.json());
+app.use(cors());
 
-let users = {}; // Простая база данных в памяти для хранения прогресса пользователей
+let userPoints = {}; // временное хранилище для очков пользователей
 
-app.use(express.json());
-
-app.post('/auth/telegram', async (req, res) => {
-    const { hash, id, ...userData } = req.body;
-
-    // Проверка подписи
-    const secretKey = crypto.createHash('sha256').update(BOT_TOKEN).digest();
-    const checkString = Object.keys(userData)
-        .sort()
-        .map(key => `${key}=${userData[key]}`)
-        .join('\n');
-    const hmac = crypto.createHmac('sha256', secretKey)
-        .update(checkString)
-        .digest('hex');
-
-    if (hmac !== hash) {
-        return res.status(401).send('Unauthorized');
-    }
-
-    // Сохраняем пользователя и его прогресс
-    if (!users[id]) {
-        users[id] = { points: 0, energy: 6500 };
-    }
-
-    res.send({ id, ...users[id] });
+app.get('/api/points/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const points = userPoints[userId] || 0;
+  res.json({ points });
 });
 
-app.post('/updateProgress', (req, res) => {
-    const { userId, points, energy } = req.body;
-    if (users[userId]) {
-        users[userId].points = points;
-        users[userId].energy = energy;
-        res.send('Progress updated');
-    } else {
-        res.status(404).send('User not found');
-    }
+app.post('/api/points/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const { points } = req.body;
+  userPoints[userId] = points;
+  res.json({ success: true });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
 });
