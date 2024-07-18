@@ -12,36 +12,36 @@ const App: React.FC = () => {
   const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    // Проверка наличия объекта Telegram.WebApp
+    // Проверка на доступность Telegram WebApp
     if (window.Telegram && window.Telegram.WebApp) {
       const telegram = window.Telegram.WebApp;
       telegram.ready();
-      const user = telegram.initDataUnsafe.user;
+      const user = telegram.initDataUnsafe?.user;
       
       if (user) {
         setUserId(user.id);
-        console.log(`User ID: ${user.id}`);
+        console.log(`ID пользователя: ${user.id}`);
       } else {
-        console.error('User not found in Telegram WebApp initData');
+        console.error('Пользователь не найден в Telegram WebApp initData');
       }
 
-      // Загрузить очки пользователя с backend
-      console.log('Loading points...');
+      // Загрузка очков пользователя с сервера
+      console.log('Загрузка очков...');
       fetch(`/api/points/${user.id}`)
         .then(response => response.json())
         .then(data => {
           setPoints(data.points);
-          console.log(`Points loaded: ${data.points}`);
+          console.log(`Очки загружены: ${data.points}`);
         })
-        .catch(error => console.error('Error fetching points:', error));
+        .catch(error => console.error('Ошибка при загрузке очков:', error));
     } else {
-      console.error('Telegram WebApp is not available');
+      console.error('Telegram WebApp недоступен');
     }
   }, []);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!userId) {
-      console.error('User ID is null. Cannot save points.');
+      console.error('ID пользователя равен null. Невозможно сохранить очки.');
       return;
     }
 
@@ -54,26 +54,25 @@ const App: React.FC = () => {
     const y = e.clientY - rect.top;
 
     const newPoints = points + pointsToAdd;
-    const newEnergy = energy - energyToReduce < 0 ? 0 : energy - energyToReduce;
-
     setPoints(newPoints);
-    setEnergy(newEnergy);
-    setClick([...click, { id: Date.now(), x, y }]);
+    console.log(`OK - Очки сохранены: ${newPoints}`);
 
-    // Сохранить новые очки на backend
+    // Сохранение очков на сервере
     fetch(`/api/points/${userId}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ points: newPoints })
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ points: newPoints }),
     })
-      .then(() => console.log(`OK - Points saved: ${newPoints}`))
-      .catch(error => console.error('Error saving points:', error));
+      .then(response => response.json())
+      .then(data => console.log('Сервер ответил:', data))
+      .catch(error => console.error('Ошибка при сохранении очков:', error));
   };
 
   const handleAnimationEnd = (id: number) => {
-    setClick((prevClicks) => prevClicks.filter(click => click.id !== id));
+    setClick(prevClicks => prevClicks.filter(click => click.id !== id));
   };
-
   useEffect(() => {
     const interval = setInterval(() => {
       setEnergy((prevEnergy) => Math.min(prevEnergy + 1, 6500));
