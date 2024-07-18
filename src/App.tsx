@@ -18,6 +18,12 @@ interface TelegramUser {
   language_code?: string;
 }
 
+declare global {
+  interface Window {
+    tg: any; // declare `tg` as a global variable
+  }
+}
+
 function App() {
   const [points, setPoints] = useState<number>(0);
   const [energy, setEnergy] = useState<number>(1000);
@@ -54,7 +60,7 @@ function App() {
     setClicks([...clicks, newClick]);
 
     // Logging to console when sending data to server
-    console.log(`User ${userId} sent data to server. Points: ${points + pointsToAdd}`);
+    console.log(`User ${userId?.id} sent data to server. Points: ${points + pointsToAdd}`);
   };
 
   const handleAnimationEnd = (id: number) => {
@@ -73,9 +79,9 @@ function App() {
     if (userId) {
       const updateProgress = () => {
         axios
-          .post(`http://localhost:5173/updateProgress/${userId}`, { points, energy })
+          .post(`http://localhost:5173/updateProgress/${userId.id}`, { points, energy })
           .then(() => {
-            console.log(`User ${userId} points updated: ${points}`);
+            console.log(`User ${userId.id} points updated: ${points}`);
           })
           .catch((error: any) => {
             console.error('Failed to update progress', error);
@@ -90,6 +96,23 @@ function App() {
       };
     }
   }, [points, energy, userId]);
+
+  useEffect(() => {
+    // This effect will fetch initial user data if available
+    const fetchInitialUserData = async () => {
+      try {
+        // @ts-ignore
+        const userId = await window.tg.getUserId();
+        console.log('Telegram User ID:', userId);
+        // Now you can use userId to fetch additional user data or perform other actions
+        // For example, you can save userId to state if needed
+      } catch (error) {
+        console.error('Error while getting Telegram user ID:', error);
+      }
+    };
+
+    fetchInitialUserData();
+  }, []);
 
   return (
     <div className="bg-gradient-main min-h-screen px-4 flex flex-col items-center text-white font-medium">
